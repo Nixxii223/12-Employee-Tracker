@@ -1,13 +1,7 @@
-// Import and require express and mysql2
-const express = require('express');
+// Import and require mysql2
 const mysql = require('mysql2');
+const inquirer = require('inquirer');
 
-const PORT = process.env.PORT || 3001;
-const app = express();
-
-// Express middleware
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
 
 // Connect to database
 const db = mysql.createConnection(
@@ -20,16 +14,41 @@ const db = mysql.createConnection(
   console.log(`Connected to the employee_db database.`)
 );
 
-// Query database
-// db.query('SELECT * FROM students', function (err, results) {
-//   console.log(results);
-// });
+const makeSelection = (userChoice) => {
+  if(userChoice === "View all departments") {
+    db.query("SELECT department.department_name AS department, role.department_id FROM role JOIN department ON role.department_id = department.id ORDER BY department.department_name", (err, res, fields) => {
+      if(err) throw err
+      console.table(res)
+      mainMenu()
+    })
+  }
+  if(userChoice === "View all roles") {
+    db.query("SELECT role.title AS role, employee.role_id FROM employee JOIN role ON employee.role_id = role.id ORDER BY role.title;", (err, res, fields) => {
+      if(err) throw err
+      console.table(res)
+      mainMenu()
+    })
+  }
+  if(userChoice === "View all employees") {
+    
+  }
 
-// Default response for any other request (Not Found)
-app.use((req, res) => {
-  res.status(404).end();
-});
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+}
+
+const mainMenu = () => {
+  inquirer.prompt([
+    {
+      type: "list",
+      name: "userChoice",
+      message: "What would you like to do?",
+      choices: ["View all departments", "View all roles", "View all employees", "Add a department", "Add a role", "Add an employee", "Update an employee role"]
+    }
+  ]).then((data) => {
+    makeSelection(data.userChoice)
+    mainMenu()
+  })
+
+}
+
+mainMenu()
