@@ -27,3 +27,11 @@ FROM
 LEFT JOIN
     employee m ON e.manager_id = m.id;
 
+SELECT 
+    first_name,
+    last_name,
+    CONCAT(first_name, last_name)
+FROM
+    employee
+
+
